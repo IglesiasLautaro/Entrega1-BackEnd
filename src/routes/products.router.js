@@ -6,8 +6,7 @@ const productRouter = express.Router();
 // Declaramos el puerto
 const port = 8080;
 // Importamos e inicializamos la class productManager
-import { ProductManager } from '../index.js'
-const productManager = new ProductManager();
+import { productManager } from '../index.js';
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -24,7 +23,7 @@ productRouter.get("/", (req, res) => {
 
 
  // Ruta '/products' con soporte para query param ?limit=
- productRouter.get("/", (req, res) => { 
+ productRouter.get("/params/", (req, res) => { 
     const { limit } = req.query;
     try {
         const productos = productManager.getProductsFromFiles();
@@ -47,7 +46,7 @@ productRouter.get("/", (req, res) => {
     try {
         const producto = productManager.getProductById(pid);
         if (producto) {
-            res.json(producto);
+            res.status(201).send(producto);
         } else {
             res.status(404).send("Producto no encontrado");
         }
@@ -69,12 +68,19 @@ productRouter.get("/", (req, res) => {
     thumbnails: []
  }
 
+ 
+
+function generarId() {
+    return '_' + Math.random().toString(36).substr(2, 9);
+   }
+
 
 // Endpoint con el metodo post para meter un nuevo producto en el array de products 
- productRouter.post('/', (req, res) => {
+ productRouter.post('/add', (req, res) => {
     newProduct = req.body;
-    if(newProduct){
-        products.push(newProduct);
+    if(newProduct && newProduct.ValidProduct()){
+        newProduct.id = generarId();
+        productManager.addProduct(newProduct);
         res.status(201).json(newProduct);
     } else {
         res.status(404).send("Error al añadir el producto");
@@ -83,36 +89,25 @@ productRouter.get("/", (req, res) => {
 
 
 // Endpoint para actualizar producto segun su ID
- productRouter.put('/:pid', (req, res) => {
+ productRouter.put('/:pid/update', (req, res) => {
     const pid = req.params.pid;
-    try {
-        const producto = productManager.getProductById(pid);
-        if (!producto) {
-            res.status(404).send("Producto no encontrado");
-        } else {
-            res.status(200).json(
-                {
-                    title: req.body.title, 
-                    description: req.body.description, 
-                    price: req.body.price, 
-                    thumbnail: req.body.thumbnail, 
-                    code: req.body.code, 
-                    stock: req.body.stock, 
-                    category: req.body.category, 
-                    status: req.body.status 
-                }
-            ) 
-        }
-    } catch (err) {
-        res.status(500).send("Error al buscar el producto");
+    const updatedProductData = req.body;
+    const updatedProduct = productManager.updateProductById(pid, updatedProductData);
+   
+    if (updatedProduct) {
+      res.status(200).json(updatedProduct);
+    } else {
+      res.status(404).send("Producto no encontrado");
     }
- });
+   });
 
 
 //  Endpoint para borrar producto segun su id
- productRouter.delete('/:pid', (req, res) => {
+ productRouter.delete('/:pid/delete', (req, res) => {
     const pid = req.params.pid;
-    if(product.id === pid){
+    const deletedProduct = productManager.deleteProductById(pid);
+
+    if(deletedProduct){
         res.send({status: "Operacion realizada con exito", message: "Producto borrado"})
     } else{
         return res.status(404).send({status: "Error", error: "Producto no encontrado"})

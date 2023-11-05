@@ -13,12 +13,12 @@ function generarId() {
     return '_' + Math.random().toString(36).substr(2, 9);
 }
 // Declaramos la constante CARROS_DB_FILE con el arhivo carrito.json para poder agregarlo al fs.wrtieFile y crear el archivo
-const CARROS_DB_FILE = 'carrito.json';
+// const CARROS_DB_FILE = 'carrito.json';
 
 // Lee los datos de los carritos desde el archivo
 async function cargarCarritosDesdeArchivo() {
     try {
-        const data = await fs.readFile(CARROS_DB_FILE, 'utf-8');
+        const data = await fs.readFileSync('../src/carrito.json', 'utf-8');
         return JSON.parse(data);
     } catch (error) {
         // Si el archivo no existe o hay un error al leerlo, devuelve un objeto vacío
@@ -29,7 +29,7 @@ async function cargarCarritosDesdeArchivo() {
 // Guarda los datos de los carritos en el archivo
 async function guardarCarritosEnArchivo(carritos) {
     try {
-        await fs.writeFile(CARROS_DB_FILE, JSON.stringify(carritos, null, 2));
+        await fs.writeFileSync('../src/carrito.json', JSON.stringify(carritos, null, 2));
     } catch (error) {
         console.error('Error al guardar los datos de los carritos:', error);
     }
@@ -37,15 +37,12 @@ async function guardarCarritosEnArchivo(carritos) {
 
 cartRouter.post('/', async (req, res) => {
     const carritos = await cargarCarritosDesdeArchivo(); 
-
     const nuevoCarrito = {
         id: generarId(),
         products: []
     };
-
     // Agrega el nuevo carrito a los carritos cargados
     carritos[nuevoCarrito.id] = nuevoCarrito; 
-
     // Guarda los carritos actualizados en el archivo
     await guardarCarritosEnArchivo(carritos);
     res.json({ mensaje: 'Nuevo carrito creado correctamente', carrito: nuevoCarrito });
@@ -57,7 +54,7 @@ cartRouter.get('/:cid', (req, res) => {
     const productosEnCarrito = carritos[carritoId]; 
 
     if (productosEnCarrito) {
-        res.json({ productos: productosEnCarrito });
+        res.status(201).json(productosEnCarrito);
     } else {
         res.status(404).json({ mensaje: 'Carrito no encontrado' });
     }

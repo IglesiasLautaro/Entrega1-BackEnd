@@ -172,3 +172,4 @@ productManager.deleteProductById(3);
 
 productManager.getProductsFromFiles();
 
+export { productManager };

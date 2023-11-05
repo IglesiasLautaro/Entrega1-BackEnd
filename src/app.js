@@ -1,7 +1,7 @@
 // Importamos express e inicializamos express
 import express from "express";
-import { productRouter } from "./routes/products.router";
-import { cartRouter } from "./routes/carts.router";
+import { productRouter } from "../src/routes/products.router.js";
+import { cartRouter } from "../src/routes/carts.router.js";
 
 const app = express();
 const port = 8080; 
