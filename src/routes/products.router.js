@@ -7,12 +7,35 @@ const productRouter = express.Router();
 const port = 8080;
 // Importamos e inicializamos la class productManager
 import { productManager } from '../index.js';
+import { Product } from '../dao/models/products.model.js';
 
 app.use(express.urlencoded({ extended: true }));
 
+//-------------------------------------------------------------------------------------//
+
+productRouter.get('/', async (req,res) => {
+    try{
+        const product = await Product.find();
+        res.status(200).json(product);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+})
+
+productRouter.post('/', async (req,res) => {
+    const product = new Product(req.body);
+    try{
+        const newProduct = await product.save();
+        res.status(201).json(newProduct);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+})
+
+//---------------------------------------------------------------------------------------//
 
 // Defino el endpoint /products que lee el archivo de productos y devuelve los productos dentro de un objeto
-productRouter.get("/", (req, res) => {
+productRouter.get("/", async (req, res) => {
     try {
         const productos = productManager.getProductsFromFiles();
         res.json(productos);
@@ -23,7 +46,7 @@ productRouter.get("/", (req, res) => {
 
 
  // Ruta '/products' con soporte para query param ?limit=
- productRouter.get("/params/", (req, res) => { 
+ productRouter.get("/params/", async (req, res) => { 
     const { limit } = req.query;
     try {
         const productos = productManager.getProductsFromFiles();
@@ -41,7 +64,7 @@ productRouter.get("/", (req, res) => {
  
 
  // Ruta '/products/:pid' para obtener un producto por su ID
- productRouter.get("/:pid", (req, res) => {
+ productRouter.get("/:pid", async (req, res) => {
     const pid = req.params.pid;
     try {
         const producto = productManager.getProductById(pid);

@@ -3,8 +3,8 @@ import express from "express";
 import { productRouter } from "../src/routes/products.router.js";
 import { cartRouter } from "../src/routes/carts.router.js";
 import handlebars from 'express-handlebars';
-import { productManager } from "./index.js";
-import { Server } from "socket.io";
+// import { productManager } from "./index.js";
+// import { Server } from "socket.io";
 import path from 'path';
 import __dirname from './utils/utils.js'
 
@@ -17,7 +17,7 @@ app.use(express.json());
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
 
-app.engine('handlebars', handlebars.engine());
+// app.engine('handlebars', handlebars.engine());
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(__dirname + '/public'));
@@ -28,59 +28,61 @@ const httpServer = app.listen(port, () => {
     console.log(`Puerto actual ${port}`)
 });
 
-const io = new Server(httpServer);
-const pM = new productManager();
-
-
-io.on('connection', (socket) => {
-    console.log("Nuevo cliente en linea");
-    socket.on('mensaje',(data)=>{
-    })});
-
-
-
-        socket.on('añadir_item',(data)=>{
-            const newProduct = data;
-            const newProductCode = newProduct.code;
-            const array = pM.getProductFromFile();
-
-            console.log("Intentando agregar un nuevo producto")
-            const duplicar = array.findIndex(product =>product.code === newProductCode);
-            
-            if(duplicar === -1){
-                if(data.thumbnail.length>0){
-                    newProduct["thumbnail"]=`${data.thumbnail}`
-                }
-                pM.addProduct(newProduct) 
-                const array = pM.getProductFromFile(); 
-                console.log(`El nuevo producto es `);
-                console.log(array[array.length-1])
-                io.emit("confirmar",[true,0,array[array.length-2].id,array[array.length-1]])}
-            else{
-                console.log(`Error Item ${newProduct.title} por codigo ${newProductCode} ya en la base de datos\nItem similar`);
-                console.log(array[duplicar])
-                io.emit("confirmar",[false,array[duplicar],0,0])
-            }
-        })
-       
-        socket.on('borrar',(data)=>{
-            console.log("Quiero eliminar ",data)
-            const array = pM.getProductFromFile();
-            const product = array.findIndex(product =>product.id === Number(data));
-            
-            if(product === -1){
-                console.log(`El item con el ID ${data} no fue encontrado`);
-                io.emit('confirmar_borrado',[false,data])
-            }else{
-                pM.deleteProductById(Number(data));
-                const array = pM.getProductFromFile();
-                io.emit('confirmar_borrado',[true,data]) 
-            }
-        })
-
-
-export default io;
-
 app.listen(port, () => {
     console.log(`El servidor está escuchando por el puerto ${port}`);
- });
+});
+    
+
+// const io = new Server(httpServer);
+// const pM = new productManager();
+
+
+// io.on('connection', (socket) => {
+//     console.log("Nuevo cliente en linea");
+//     socket.on('mensaje',(data)=>{
+//     })});
+
+
+
+//         socket.on('añadir_item',(data)=>{
+//             const newProduct = data;
+//             const newProductCode = newProduct.code;
+//             const array = pM.getProductFromFile();
+
+//             console.log("Intentando agregar un nuevo producto")
+//             const duplicar = array.findIndex(product =>product.code === newProductCode);
+            
+//             if(duplicar === -1){
+//                 if(data.thumbnail.length>0){
+//                     newProduct["thumbnail"]=`${data.thumbnail}`
+//                 }
+//                 pM.addProduct(newProduct) 
+//                 const array = pM.getProductFromFile(); 
+//                 console.log(`El nuevo producto es `);
+//                 console.log(array[array.length-1])
+//                 io.emit("confirmar",[true,0,array[array.length-2].id,array[array.length-1]])}
+//             else{
+//                 console.log(`Error Item ${newProduct.title} por codigo ${newProductCode} ya en la base de datos\nItem similar`);
+//                 console.log(array[duplicar])
+//                 io.emit("confirmar",[false,array[duplicar],0,0])
+//             }
+//         })
+       
+//         socket.on('borrar',(data)=>{
+//             console.log("Quiero eliminar ",data)
+//             const array = pM.getProductFromFile();
+//             const product = array.findIndex(product =>product.id === Number(data));
+            
+//             if(product === -1){
+//                 console.log(`El item con el ID ${data} no fue encontrado`);
+//                 io.emit('confirmar_borrado',[false,data])
+//             }else{
+//                 pM.deleteProductById(Number(data));
+//                 const array = pM.getProductFromFile();
+//                 io.emit('confirmar_borrado',[true,data]) 
+//             }
+//         })
+
+
+// export default io;
+

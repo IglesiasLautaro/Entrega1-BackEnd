@@ -4,6 +4,7 @@ const cartRouter = express.Router();
 
 // Importamos fs 
 import fs from 'fs';
+import { Carts } from '../dao/models/carts.model';
 
 // Definimos un array llamado carritos que va a contener todos los "carros"
 const carritos = {};
@@ -35,6 +36,65 @@ async function guardarCarritosEnArchivo(carritos) {
     }
 }
 
+//ENDOPOINTS PARA PROBAR LA DATABASE DE MONGO ATLAS con los models y routes
+
+cartRouter.get('/', async(res, req) => {
+    try{
+        let cart = await Carts.find();
+        res.setEncoding({result: "success", payload: cart});
+    }catch(error){
+        console.log("Cannot get user with moongose: ", error)
+        res.send({ result: "Error"})
+    }
+})
+
+cartRouter.post('/', async(res, req) => {
+    let {carritoId, productoId, producto} = req.body;
+
+    if(!carritoId || !productoId || !producto)
+        return res.send({status: "Error", error: "Incomplete values"})
+
+    let result = await Carts.create({
+        carritoId,
+        productoId,
+        producto,
+     });
+
+    res.send({result: "success", payload: result})
+});
+
+cartRouter.put('/:uid', async(res, req) => {
+    let { uid } = req.params;
+    let cartToReplace = req.body;
+
+    if(
+        !cartToReplace.carritoId || 
+        !cartToReplace.productoId || 
+        !cartToReplace.producto
+    ) {
+        res.send({status: "Error", error: "Incomplete values"})
+    } else {
+        let result = await Carts.updateOne({
+            _id: uid,
+        }, 
+        cartToReplace
+     );
+
+    res.send({result: "success", payload: result})
+    }
+});
+
+cartRouter.delete('/:uid', async(res, req) => {
+    let { uid } = req.params;
+
+    let result = await Carts.deleteOne({
+        _id: uid,
+    });
+
+    res.send({result: "success", payload: result})
+});
+
+//-------------------------------------------------------------------------------------------------------------------//
 cartRouter.post('/', async (req, res) => {
     const carritos = await cargarCarritosDesdeArchivo(); 
     const nuevoCarrito = {
